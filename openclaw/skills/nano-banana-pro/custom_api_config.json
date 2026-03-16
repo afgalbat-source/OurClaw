@@ -1,0 +1,42 @@
+{
+  "_说明": "自定义 API 配置示例文件",
+  "_使用说明": "复制此文件为 my_config.json 并根据需要修改配置",
+  
+  "providers": {
+    "openai": {
+      "name": "OpenAI DALL-E 3",
+      "base_url": "https://api.openai.com/v1",
+      "endpoint": "/images/generations",
+      "headers": {
+        "Authorization": "Bearer YOUR_OPENAI_API_KEY",
+        "Content-Type": "application/json"
+      },
+      "model": "dall-e-3",
+      "resolution_map": {
+        "1K": "1024x1024",
+        "2K": "1792x1024",
+        "4K": "2048x2048"
+      }
+    },
+    "stability": {
+      "name": "Stability AI",
+      "base_url": "https://api.stability.ai/v1",
+      "endpoint": "/generation/stable-diffusion-xl-1024-v1-0/text-to-image",
+      "headers": {
+        "Authorization": "Bearer YOUR_STABILITY_API_KEY",
+        "Content-Type": "application/json"
+      },
+      "engine_id": "stable-diffusion-xl-1024-v1-0"
+    },
+    "custom_proxy": {
+      "name": "自定义反向代理",
+      "base_url": "https://your-proxy-domain.com/v1",
+      "endpoint": "/images/generations",
+      "headers": {
+        "Authorization": "Bearer YOUR_API_KEY",
+        "Content-Type": "application/json",
+        "X-Custom-Header": "value"
+      }
+    }
+  }
+}

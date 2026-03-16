@@ -1,0 +1,15 @@
+# Dependencies
+**/node_modules/
+
+# Runtime/user workspaces (contain nested .git repos)
+TFClaw/.home/
+TFClaw/.runtime/
+
+# Local runtime/generated data
+openclaw/.agent/
+openclaw/.agents/
+openclaw/.pi/
+
+# Common noise
+.DS_Store
+*.log

@@ -1,0 +1,14 @@
+{
+  "agents": {
+    "list": [
+      {
+        "id": "main",
+        "subagents": {
+          "allowAgents": [
+            "main"
+          ]
+        }
+      }
+    ]
+  }
+}

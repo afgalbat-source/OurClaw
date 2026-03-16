@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "skills": {
+    "youtube-watcher": {
+      "version": "1.0.0",
+      "installedAt": 1772855293062
+    },
+    "summarize": {
+      "version": "1.0.0",
+      "installedAt": 1772855480919
+    }
+  }
+}
