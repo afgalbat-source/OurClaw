@@ -1,6 +1,7 @@
-
-
-<h1 align="center"><img src="./figures/icon.png" alt="" width="64" style="vertical-align: middle;">&nbsp; OpenMoss OurClaw</h1>
+<div align="center">
+  <img src="./figures/icon.png" alt="OurClaw Icon" width="160">
+  <h1>OpenMoss OurClaw</h1>
+</div>
 
 <p align="center">
   <strong> 
