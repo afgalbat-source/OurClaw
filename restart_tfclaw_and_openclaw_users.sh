@@ -12,12 +12,6 @@ TMUX_SESSION_PREFIX="${TFCLAW_OPENCLAW_TMUX_SESSION_PREFIX:-tfoc-}"
 LOG_ROOT="${TFCLAW_LOG_ROOT:-${SCIHARNESS_ROOT}/.runtime/tfclaw_runtime_logs}"
 GATEWAY_LOG_PATH="${TFCLAW_GATEWAY_LOG_PATH:-${LOG_ROOT}/tfclaw_gateway.log}"
 RELAY_LOG_PATH="${TFCLAW_RELAY_LOG_PATH:-${LOG_ROOT}/tfclaw_relay.log}"
-FORCED_MODEL_ID="nex/nex-n1.1"
-FORCED_MODEL_BASE_URL="https://nex-deepseek-long-context.openapi-qb-ai.sii.edu.cn/v1"
-FORCED_MODEL_API_KEY="XncN/r7Uvu0PfmM9jwA0+0WRjTL4wE5RQa9qbUFnAM8="
-FORCED_MODEL_API="openai-completions"
-FORCED_MODEL_CONTEXT_WINDOW=128000
-FORCED_MODEL_MAX_TOKENS=8192
 FORCED_COMPACTION_RESERVE_TOKENS_FLOOR=20000
 
 resolve_from_tfclaw_root() {
@@ -648,26 +642,38 @@ if [[ ! -f "$OPENCLAW_ENTRY" ]]; then
   exit 1
 fi
 
+OPENCLAW_CONFIG_TEMPLATE_PATH_RAW="$(jq -r '.openclawBridge.configTemplatePath // "~/.openclaw/openclaw.json"' "$CONFIG_PATH")"
+if [[ "$OPENCLAW_CONFIG_TEMPLATE_PATH_RAW" == "~/"* ]]; then
+  OPENCLAW_CONFIG_TEMPLATE_PATH="${HOME}/${OPENCLAW_CONFIG_TEMPLATE_PATH_RAW#\~/}"
+elif [[ "$OPENCLAW_CONFIG_TEMPLATE_PATH_RAW" == "~" ]]; then
+  OPENCLAW_CONFIG_TEMPLATE_PATH="$HOME"
+elif [[ "$OPENCLAW_CONFIG_TEMPLATE_PATH_RAW" == /* ]]; then
+  OPENCLAW_CONFIG_TEMPLATE_PATH="$OPENCLAW_CONFIG_TEMPLATE_PATH_RAW"
+else
+  OPENCLAW_CONFIG_TEMPLATE_PATH="$(resolve_from_tfclaw_root "$OPENCLAW_CONFIG_TEMPLATE_PATH_RAW")"
+fi
+OPENCLAW_CONFIG_TEMPLATE_PATH="$(readlink -f "$OPENCLAW_CONFIG_TEMPLATE_PATH" 2>/dev/null || echo "$OPENCLAW_CONFIG_TEMPLATE_PATH")"
+TEMPLATE_CONFIG_JSON='{}'
+if [[ -f "$OPENCLAW_CONFIG_TEMPLATE_PATH" ]]; then
+  if ! jq -e . "$OPENCLAW_CONFIG_TEMPLATE_PATH" >/dev/null 2>&1; then
+    echo "failed to parse openclaw config template: $OPENCLAW_CONFIG_TEMPLATE_PATH" >&2
+    exit 1
+  fi
+  TEMPLATE_CONFIG_JSON="$(jq -c 'if type == "object" then . else {} end' "$OPENCLAW_CONFIG_TEMPLATE_PATH")"
+else
+  echo "[warn] openclaw config template not found, fallback to empty template: $OPENCLAW_CONFIG_TEMPLATE_PATH" >&2
+fi
+
 OPENCLAW_COMMON_WORKSPACE_DIR="${TFCLAW_COMMON_WORKSPACE_DIR:-$(dirname -- "$OPENCLAW_ROOT")/commonworkspace}"
 OPENCLAW_COMMON_WORKSPACE_DIR="$(readlink -f "$OPENCLAW_COMMON_WORKSPACE_DIR" 2>/dev/null || echo "$OPENCLAW_COMMON_WORKSPACE_DIR")"
 OPENCLAW_COMMON_CONFIG_PATH="${OPENCLAW_COMMON_WORKSPACE_DIR}/openclaw.json"
-COMMON_MODELS_JSON='{}'
-COMMON_AGENTS_DEFAULTS_JSON='{}'
-COMMON_AGENTS_LIST_JSON='[]'
-COMMON_HAS_MODELS=0
-COMMON_HAS_AGENTS_DEFAULTS=0
-COMMON_HAS_AGENTS_LIST=0
+COMMON_CONFIG_JSON='{}'
 if [[ -f "$OPENCLAW_COMMON_CONFIG_PATH" ]]; then
   if ! jq -e . "$OPENCLAW_COMMON_CONFIG_PATH" >/dev/null 2>&1; then
     echo "failed to parse common workspace openclaw config: $OPENCLAW_COMMON_CONFIG_PATH" >&2
     exit 1
   fi
-  COMMON_MODELS_JSON="$(jq -c '(.models // {}) | if type == "object" then . else {} end' "$OPENCLAW_COMMON_CONFIG_PATH")"
-  COMMON_AGENTS_DEFAULTS_JSON="$(jq -c '(.agents // {}) | if type == "object" then (.defaults // {}) else {} end | if type == "object" then . else {} end' "$OPENCLAW_COMMON_CONFIG_PATH")"
-  COMMON_AGENTS_LIST_JSON="$(jq -c '(.agents // {}) as $agents | if ($agents | type) == "object" and ($agents | has("list")) then ($agents.list | if type == "array" then . else [] end) else [] end' "$OPENCLAW_COMMON_CONFIG_PATH")"
-  COMMON_HAS_MODELS="$(jq -r '((.models // {}) | if type == "object" then (length > 0) else false end) | if . then 1 else 0 end' "$OPENCLAW_COMMON_CONFIG_PATH")"
-  COMMON_HAS_AGENTS_DEFAULTS="$(jq -r '(.agents // {}) as $agents | ((($agents | type) == "object") and (((($agents.defaults // {}) | if type == "object" then . else {} end) | length) > 0)) | if . then 1 else 0 end' "$OPENCLAW_COMMON_CONFIG_PATH")"
-  COMMON_HAS_AGENTS_LIST="$(jq -r '(.agents // {}) as $agents | ((($agents | type) == "object") and ($agents | has("list"))) | if . then 1 else 0 end' "$OPENCLAW_COMMON_CONFIG_PATH")"
+  COMMON_CONFIG_JSON="$(jq -c 'if type == "object" then . else {} end' "$OPENCLAW_COMMON_CONFIG_PATH")"
 fi
 
 mkdir -p "$(dirname -- "$MAP_PATH")"
@@ -1096,69 +1102,38 @@ TFCLAW_JAIL_SHELL
       --arg skills_dir "$skills_dir" \
       --arg workspace_skills_dir "$workspace_skills_dir" \
       --argjson runtime_env_vars "$runtime_env_vars_json" \
-      --argjson common_models "$COMMON_MODELS_JSON" \
-      --argjson common_agents_defaults "$COMMON_AGENTS_DEFAULTS_JSON" \
-      --argjson common_agents_list "$COMMON_AGENTS_LIST_JSON" \
-      --argjson common_has_models "$COMMON_HAS_MODELS" \
-      --argjson common_has_agents_defaults "$COMMON_HAS_AGENTS_DEFAULTS" \
-      --argjson common_has_agents_list "$COMMON_HAS_AGENTS_LIST" \
+      --argjson template_config "$TEMPLATE_CONFIG_JSON" \
+      --argjson common_config "$COMMON_CONFIG_JSON" \
       --arg feishu_app_id "$OPENCLAW_FEISHU_APP_ID" \
       --arg feishu_app_secret "$OPENCLAW_FEISHU_APP_SECRET" \
       --arg feishu_verification_token "$feishu_verification_token" \
       --arg feishu_encrypt_key "$OPENCLAW_FEISHU_ENCRYPT_KEY" \
       --argjson feishu_webhook_port "$feishu_webhook_port" \
-      --arg model_id "$FORCED_MODEL_ID" \
-      --arg model_base_url "$FORCED_MODEL_BASE_URL" \
-      --arg model_api_key "$FORCED_MODEL_API_KEY" \
-      --arg model_api "$FORCED_MODEL_API" \
-      --argjson model_context_window "$FORCED_MODEL_CONTEXT_WINDOW" \
-      --argjson model_max_tokens "$FORCED_MODEL_MAX_TOKENS" \
       --argjson compaction_reserve_tokens_floor "$FORCED_COMPACTION_RESERVE_TOKENS_FLOOR" \
       '
+      def deepmerge(a; b):
+        if (a | type) == "object" and (b | type) == "object" then
+          reduce (((a | keys_unsorted) + (b | keys_unsorted) | unique[]) ) as $k
+            ({}; .[$k] = deepmerge(a[$k]; b[$k]))
+        elif b == null then
+          a
+        else
+          b
+        end;
+      (if type == "object" then . else {} end) as $current |
+      (deepmerge($template_config; $common_config)) as $base |
+      deepmerge($current; $base) |
       .skills = (.skills // {}) |
       .skills.load = (.skills.load // {}) |
       .skills.load.extraDirs = [ $shared_skills_dir, $skills_dir, $workspace_skills_dir ] |
       .env = (.env // {}) |
       .env.vars = ((.env.vars // {}) + $runtime_env_vars) |
-      if $common_has_models == 1 then
-        .models = $common_models
-      else
-        .models = (.models // {}) |
-        .models.providers = (.models.providers // {}) |
-        .models.providers.nex = ((.models.providers.nex // {}) + {
-          baseUrl: $model_base_url,
-          apiKey: $model_api_key,
-          api: $model_api
-        }) |
-        .models.providers.nex.models = [
-          {
-            id: $model_id,
-            name: $model_id,
-            contextWindow: $model_context_window,
-            maxTokens: $model_max_tokens
-          }
-        ]
-      end |
       .agents = (.agents // {}) |
-      if $common_has_agents_defaults == 1 then
-        .agents.defaults = $common_agents_defaults
-      else
-        .agents.defaults = (.agents.defaults // {}) |
-        .agents.defaults.model = { primary: $model_id } |
-        .agents.defaults.models = {
-          ($model_id): {}
-        }
-      end |
       .agents.defaults = (.agents.defaults // {}) |
       .agents.defaults.compaction = ((.agents.defaults.compaction // {}) + {
         mode: "safeguard",
         reserveTokensFloor: $compaction_reserve_tokens_floor
       }) |
-      if $common_has_agents_list == 1 then
-        .agents.list = $common_agents_list
-      else
-        .
-      end |
       if ((.agents.list // null) | type) == "array" then
         .agents.list |= map(
           if ((.subagents.allowAgents // null) | type) == "array" then
@@ -1192,6 +1167,16 @@ TFCLAW_JAIL_SHELL
       .tools.fs.workspaceOnly = true |
       .tools.fs.readOnlyRoots = (((.tools.fs.readOnlyRoots // []) + [ $shared_skills_dir, $extension_feishu_skills_dir, $openclaw_extensions_dir ]) | map(tostring) | map(select(length > 0)) | unique) |
       .tools.deny = ((.tools.deny // []) | map(tostring) | map(select((. | ascii_downcase) != "message"))) |
+      .tools.alsoAllow = (((.tools.alsoAllow // []) + [
+        "feishu_doc",
+        "feishu_create_doc",
+        "feishu_fetch_doc",
+        "feishu_update_doc",
+        "feishu_app_scopes",
+        "feishu_drive_file",
+        "feishu_doc_comments",
+        "feishu_doc_media"
+      ]) | map(tostring) | map(select(length > 0)) | unique) |
       .channels = (.channels // {}) |
       .channels.feishu = (.channels.feishu // {}) |
       .channels.feishu.enabled = true |
@@ -1213,7 +1198,7 @@ TFCLAW_JAIL_SHELL
         drive: true,
         scopes: true,
         chat: true,
-        perm: false
+        perm: true
       }) |
       del(
         .channels.feishu.accounts,

@@ -15,5 +15,17 @@
     "allow": [
       "feishu"
     ]
+  },
+  "tools": {
+    "alsoAllow": [
+      "feishu_doc",
+      "feishu_create_doc",
+      "feishu_fetch_doc",
+      "feishu_update_doc",
+      "feishu_app_scopes",
+      "feishu_drive_file",
+      "feishu_doc_comments",
+      "feishu_doc_media"
+    ]
   }
 }

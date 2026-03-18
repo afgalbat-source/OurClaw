@@ -3626,6 +3626,25 @@ class OpenClawPerUserBridge {
           .filter((item) => item.length > 0 && item.toLowerCase() !== "message")
       : [];
     tools.deny = denyList;
+    const configuredAlsoAllow = Array.isArray(tools.alsoAllow)
+      ? tools.alsoAllow
+          .filter((item): item is string => typeof item === "string")
+          .map((item) => item.trim())
+          .filter((item) => item.length > 0)
+      : [];
+    tools.alsoAllow = Array.from(
+      new Set([
+        ...configuredAlsoAllow,
+        "feishu_doc",
+        "feishu_create_doc",
+        "feishu_fetch_doc",
+        "feishu_update_doc",
+        "feishu_app_scopes",
+        "feishu_drive_file",
+        "feishu_doc_comments",
+        "feishu_doc_media",
+      ]),
+    );
     cfg.tools = tools;
 
     return cfg;
