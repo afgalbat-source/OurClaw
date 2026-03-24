@@ -1123,6 +1123,13 @@ TFCLAW_JAIL_SHELL
       (if type == "object" then . else {} end) as $current |
       (deepmerge($template_config; $common_config)) as $base |
       deepmerge($current; $base) |
+      # Always re-apply models from the template config for every restart,
+      # even when the per-user config already exists.
+      if (($template_config.models // null) | type) != "null" then
+        .models = $template_config.models
+      else
+        .
+      end |
       .skills = (.skills // {}) |
       .skills.load = (.skills.load // {}) |
       .skills.load.extraDirs = [ $shared_skills_dir, $skills_dir, $workspace_skills_dir ] |

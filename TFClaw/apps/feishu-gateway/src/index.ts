@@ -8159,6 +8159,29 @@ class TfclawCommandRouter {
     return value;
   }
 
+  private async resolveGroupModeLabelByRoutingUserKey(routingUserKey: string, fallbackLabel: string): Promise<string> {
+    const fallback = fallbackLabel.trim() || "group";
+    const normalizedRoutingUserKey = routingUserKey.trim();
+    if (!normalizedRoutingUserKey) {
+      return fallback;
+    }
+    try {
+      const scope = await this.openclawBridge.resolveExecutionScope({
+        routingUserKey: normalizedRoutingUserKey,
+        senderId: undefined,
+        senderOpenId: undefined,
+        senderUserId: undefined,
+      });
+      const linuxUser = scope.linuxUser.trim();
+      if (linuxUser) {
+        return linuxUser;
+      }
+    } catch {
+      // Keep fallback label when scope resolution is unavailable.
+    }
+    return fallback;
+  }
+
   private async resolveOpenClawRouteScope(
     selectionKey: string,
     userScope: RouterUserScope,
@@ -8176,11 +8199,16 @@ class TfclawCommandRouter {
       return route;
     }
     if (selected?.kind === "group") {
+      const routingUserKey = selected.routingUserKey.trim()
+        || this.buildDefaultGroupRouteScope(ctx?.chatId || "unknown").routingUserKey;
+      const modeLabel = await this.resolveGroupModeLabelByRoutingUserKey(
+        routingUserKey,
+        selected.modeLabel.trim() || ctx?.chatId?.trim() || "group",
+      );
       const route: OpenClawRouteScope = {
         kind: "group",
-        modeLabel: selected.modeLabel.trim() || ctx?.chatId?.trim() || "group",
-        routingUserKey: selected.routingUserKey.trim()
-          || this.buildDefaultGroupRouteScope(ctx?.chatId || "unknown").routingUserKey,
+        modeLabel,
+        routingUserKey,
         workspaceOverrideDir: selected.workspaceOverrideDir,
       };
       this.chatResolvedOpenClawRouteScopes.set(selectionKey, route);
@@ -8189,7 +8217,15 @@ class TfclawCommandRouter {
 
     const isGroupChat = (ctx?.chatType || "").trim().toLowerCase() === "group";
     if (isGroupChat) {
-      const route = this.buildDefaultGroupRouteScope(ctx?.chatId || "unknown");
+      const defaultRoute = this.buildDefaultGroupRouteScope(ctx?.chatId || "unknown");
+      const modeLabel = await this.resolveGroupModeLabelByRoutingUserKey(
+        defaultRoute.routingUserKey,
+        defaultRoute.modeLabel,
+      );
+      const route: OpenClawRouteScope = {
+        ...defaultRoute,
+        modeLabel,
+      };
       this.chatResolvedOpenClawRouteScopes.set(selectionKey, route);
       return route;
     }
@@ -8310,18 +8346,24 @@ class TfclawCommandRouter {
           return true;
         }
         const groupRoute = this.buildDefaultGroupRouteScope(ctx.chatId);
-        this.chatOpenClawRouteScopes.set(selectionKey, groupRoute);
-        await this.openclawBridge.resolveExecutionScope({
+        const groupScope = await this.openclawBridge.resolveExecutionScope({
           routingUserKey: groupRoute.routingUserKey,
           senderId: undefined,
           senderOpenId: undefined,
           senderUserId: undefined,
         });
+        const groupModeLabel = groupScope.linuxUser.trim() || groupRoute.modeLabel;
+        const resolvedGroupRoute: OpenClawRouteScope = {
+          ...groupRoute,
+          modeLabel: groupModeLabel,
+        };
+        this.chatOpenClawRouteScopes.set(selectionKey, resolvedGroupRoute);
+        this.chatResolvedOpenClawRouteScopes.set(selectionKey, resolvedGroupRoute);
         await this.replyWithMode(
           ctx.chatId,
           ctx.responder,
           selectionKey,
-          `openclaw mode switched: group:${groupRoute.modeLabel}`,
+          `openclaw mode switched: group:${groupModeLabel}`,
         );
         return true;
       }
@@ -8774,18 +8816,24 @@ class TfclawCommandRouter {
             return true;
           }
           const groupRoute = this.buildDefaultGroupRouteScope(ctx.chatId);
-          this.chatOpenClawRouteScopes.set(selectionKey, groupRoute);
-          await this.openclawBridge.resolveExecutionScope({
+          const groupScope = await this.openclawBridge.resolveExecutionScope({
             routingUserKey: groupRoute.routingUserKey,
             senderId: undefined,
             senderOpenId: undefined,
             senderUserId: undefined,
           });
+          const groupModeLabel = groupScope.linuxUser.trim() || groupRoute.modeLabel;
+          const resolvedGroupRoute: OpenClawRouteScope = {
+            ...groupRoute,
+            modeLabel: groupModeLabel,
+          };
+          this.chatOpenClawRouteScopes.set(selectionKey, resolvedGroupRoute);
+          this.chatResolvedOpenClawRouteScopes.set(selectionKey, resolvedGroupRoute);
           await this.replyWithMode(
             ctx.chatId,
             ctx.responder,
             selectionKey,
-            `openclaw mode switched: group:${groupRoute.modeLabel}`,
+            `openclaw mode switched: group:${groupModeLabel}`,
           );
           return true;
         }
